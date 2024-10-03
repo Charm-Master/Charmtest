@@ -350,55 +350,6 @@
     </style>
 </head>
 <body class="light-mode">
-    <!-- Navigation Bar -->
-    <nav>
-        <div class="logo">Charm</div>
-        <ul>
-            <li><a href="#home" onclick="showSection('home')">Home</a></li>
-            <li><a href="#python-repo" onclick="showSection('python-repo')">Python Repository</a></li>
-            <li><a href="#html-repo" onclick="showSection('html-repo')">HTML Repository</a></li>
-            <li><a href="#about" onclick="showSection('about')">About</a></li>
-            <li><a href="#settings" onclick="showSection('settings')">Settings</a></li>
-        </ul>
-    </nav>
-
-    <!-- Main Content -->
-    <main>
-	<!-- Inside your <section id="home"> -->
-	<section id="home">
-    	<h1>Welcome to the Project Repository</h1>
-    	<p>Explore, view, and download a collection of Python and HTML projects with detailed descriptions.</p>
-      <h9>
-      <head>
-      <!-- Font Awesome Icon Library -->
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-      <style>
-      .checked {
-        color: orange;
-      }
-      </style>
-      </head>
-      <body>
-	
-	<img src="https://cdn.stocksnap.io/img-thumbs/960w/programming-code_1STVFMTBJY.jpg" alt="Description of the image">
-
-      <h2>Star Rating</h2>
-      <span class="fa fa-star checked"></span>
-      <span class="fa fa-star checked"></span>
-      <span class="fa fa-star checked"></span>
-      <span class="fa fa-star checked"></span>
-      <span class="fa fa-star checked"></span>
-
-      </body>
-	<p>"The Design Layout, gives a real sense of coding." - AnonymousF</p>
-	<p></p>
-	<p>"Its so easy to understand and use." - AnonymousElite</p>
-	<p></p>
-	<p>"I'm lovin' it." - AnonymousM</p>
-	<p></p>
-	<p>"Too easy" - Anonymous</p>
-      </h9>
-	</section>
 
 
 
@@ -1136,6 +1087,310 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Account Management System</title>
+    <!-- Firebase SDKs -->
+    <script type="module">
+            // Import the Firebase modules
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+            import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+            import { getFirestore, collection, addDoc, getDocs, doc, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+            // Your web app's Firebase configuration
+            const firebaseConfig = {
+                apiKey: "AIzaSyDs-JGgBTA3ncI8RdDLvY17P8gO7KbHE-g",
+                authDomain: "officialcharmdata.firebaseapp.com",
+                projectId: "officialcharmdata",
+                storageBucket: "officialcharmdata.appspot.com",
+                messagingSenderId: "978863054747",
+                appId: "1:978863054747:web:6074fcf487cda2fbe50b3e",
+                measurementId: "G-BD9EZRYCGZ"
+            };
+
+            // Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth();
+            const db = getFirestore();
+
+            let loggedInUser = null;
+            let currentAccount = null; // Store the current account being managed
+
+            // DOM Elements
+            const loginArea = document.getElementById('loginArea');
+            const userInfo = document.getElementById('userInfo');
+            const adminSection = document.getElementById('adminSection');
+            const loggedInAs = document.getElementById('loggedInAs');
+            const accountList = document.getElementById('accountList');
+            const accountModal = document.getElementById('accountModal');
+            const accountDetails = document.getElementById('accountDetails');
+            const newEmailInput = document.getElementById('newEmailInput');
+
+            // Functions
+
+            // Create Account
+            async function createAccount(username, email, password) {
+                try {
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    const user = userCredential.user;
+                    // Add additional user data to Firestore
+                    await addDoc(collection(db, "accounts"), {
+                        uid: user.uid,
+                        username: username,
+                        email: email,
+                        status: 'active',
+                        verified: false,
+                        isAdmin: false // Set to true manually in Firestore for admin users
+                    });
+                    alert('Account created successfully.');
+                    clearCreateAccountForm();
+                } catch (error) {
+                    console.error("Error creating account:", error);
+                    alert(`Error creating account: ${error.message}`);
+                }
+            }
+
+            // Login
+            async function login(email, password) {
+                try {
+                    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                    loggedInUser = userCredential.user;
+                    alert('Logged in successfully.');
+                } catch (error) {
+                    console.error("Error logging in:", error);
+                    alert(`Error logging in: ${error.message}`);
+                }
+            }
+
+            // Logout
+            async function logout() {
+                try {
+                    await signOut(auth);
+                    loggedInUser = null;
+                    alert('Logged out successfully.');
+                } catch (error) {
+                    console.error("Error logging out:", error);
+                    alert(`Error logging out: ${error.message}`);
+                }
+            }
+
+            // Update UI based on authentication state
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    loggedInUser = user;
+                    await updateUI();
+                } else {
+                    loggedInUser = null;
+                    await updateUI();
+                }
+            });
+
+            // Update UI Function
+            async function updateUI() {
+                if (loggedInUser) {
+                    loginArea.classList.add('hidden');
+                    userInfo.classList.remove('hidden');
+                    loggedInAs.textContent = `Logged in as: ${loggedInUser.email}`;
+
+                    // Fetch user data from Firestore
+                    const accountsSnapshot = await getDocs(collection(db, "accounts"));
+                    let userData = null;
+                    accountsSnapshot.forEach(doc => {
+                        if (doc.data().uid === loggedInUser.uid) {
+                            userData = doc.data();
+                        }
+                    });
+
+                    if (userData && userData.isAdmin) {
+                        adminSection.classList.remove('hidden');
+                        await updateAccountList();
+                    } else {
+                        adminSection.classList.add('hidden');
+                    }
+                } else {
+                    loginArea.classList.remove('hidden');
+                    userInfo.classList.add('hidden');
+                    adminSection.classList.add('hidden');
+                    accountList.innerHTML = '';
+                }
+            }
+
+            // Update Account List for Admin
+            async function updateAccountList() {
+                accountList.innerHTML = '';
+                const accountsSnapshot = await getDocs(collection(db, "accounts"));
+                accountsSnapshot.forEach(docSnap => {
+                    const account = docSnap.data();
+                    const accountItem = document.createElement('div');
+                    accountItem.classList.add('account-item');
+                    accountItem.innerHTML = `
+                        <span>${account.username} (${account.email}) - Status: ${account.status} - Verified: ${account.verified}</span>
+                        <div>
+                            <button onclick="openAccountModal('${docSnap.id}')">Manage</button>
+                        </div>
+                    `;
+                    accountList.appendChild(accountItem);
+                });
+            }
+
+            // Open Account Modal
+            async function openAccountModal(docId) {
+                try {
+                    const docRef = doc(db, "accounts", docId);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        currentAccount = { id: docId, ...docSnap.data() };
+                        accountDetails.textContent = `Managing: ${currentAccount.username} (${currentAccount.email})`;
+                        newEmailInput.value = ''; // Clear email input
+                        accountModal.style.display = "block";
+                    } else {
+                        alert("No such document!");
+                    }
+                } catch (error) {
+                    console.error("Error opening account modal:", error);
+                    alert(`Error opening account modal: ${error.message}`);
+                }
+            }
+
+            // Change Email
+            async function changeEmail(newEmail) {
+                if (!currentAccount) return;
+                try {
+                    const docRef = doc(db, "accounts", currentAccount.id);
+                    await updateDoc(docRef, {
+                        email: newEmail
+                    });
+                    alert(`Email for ${currentAccount.username} has been changed to ${newEmail}.`);
+                    await updateAccountList();
+                    closeModal();
+                } catch (error) {
+                    console.error("Error changing email:", error);
+                    alert(`Error changing email: ${error.message}`);
+                }
+            }
+
+            // Delete Account
+            async function deleteAccount() {
+                if (!currentAccount) return;
+                try {
+                    const docRef = doc(db, "accounts", currentAccount.id);
+                    await deleteDoc(docRef);
+                    alert(`${currentAccount.username} has been deleted.`);
+                    await updateAccountList();
+                    closeModal();
+                } catch (error) {
+                    console.error("Error deleting account:", error);
+                    alert(`Error deleting account: ${error.message}`);
+                }
+            }
+
+            // Ban Account
+            async function banAccount() {
+                if (!currentAccount) return;
+                try {
+                    const docRef = doc(db, "accounts", currentAccount.id);
+                    await updateDoc(docRef, {
+                        status: 'banned'
+                    });
+                    alert(`${currentAccount.username} has been banned.`);
+                    await updateAccountList();
+                    closeModal();
+                } catch (error) {
+                    console.error("Error banning account:", error);
+                    alert(`Error banning account: ${error.message}`);
+                }
+            }
+
+            // Unban Account
+            async function unbanAccount() {
+                if (!currentAccount) return;
+                try {
+                    const docRef = doc(db, "accounts", currentAccount.id);
+                    await updateDoc(docRef, {
+                        status: 'active'
+                    });
+                    alert(`${currentAccount.username} has been unbanned.`);
+                    await updateAccountList();
+                    closeModal();
+                } catch (error) {
+                    console.error("Error unbanning account:", error);
+                    alert(`Error unbanning account: ${error.message}`);
+                }
+            }
+
+            // Toggle Verification
+            async function toggleVerification() {
+                if (!currentAccount) return;
+                try {
+                    const docRef = doc(db, "accounts", currentAccount.id);
+                    await updateDoc(docRef, {
+                        verified: !currentAccount.verified
+                    });
+                    alert(`${currentAccount.username} verification status changed to ${!currentAccount.verified ? 'verified' : 'not verified'}.`);
+                    await updateAccountList();
+                    closeModal();
+                } catch (error) {
+                    console.error("Error toggling verification:", error);
+                    alert(`Error toggling verification: ${error.message}`);
+                }
+            }
+
+            // Close Modal
+            function closeModal() {
+                accountModal.style.display = "none";
+            }
+
+            // Clear Create Account Form
+            function clearCreateAccountForm() {
+                document.getElementById('createUsernameInput').value = '';
+                document.getElementById('createEmailInput').value = '';
+                document.getElementById('createPasswordInput').value = '';
+            }
+
+            // Event Listeners
+            document.getElementById('createAccountBtn').addEventListener('click', () => {
+                const username = document.getElementById('createUsernameInput').value.trim();
+                const email = document.getElementById('createEmailInput').value.trim();
+                const password = document.getElementById('createPasswordInput').value.trim();
+                if (username && email && password) {
+                    createAccount(username, email, password);
+                } else {
+                    alert('Please fill in all fields to create an account.');
+                }
+            });
+
+            document.getElementById('loginBtn').addEventListener('click', () => {
+                const email = document.getElementById('loginUsernameInput').value.trim();
+                const password = document.getElementById('loginPasswordInput').value.trim();
+                if (email && password) {
+                    login(email, password);
+                } else {
+                    alert('Please enter both email and password to login.');
+                }
+            });
+
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+
+            document.getElementById('changeEmailBtn').addEventListener('click', () => {
+                const newEmail = newEmailInput.value.trim();
+                if (newEmail) {
+                    changeEmail(newEmail);
+                } else {
+                    alert('Please enter a new email.');
+                }
+            });
+
+            document.getElementById('deleteAccountBtn').addEventListener('click', deleteAccount);
+            document.getElementById('banAccountBtn').addEventListener('click', banAccount);
+            document.getElementById('unbanAccountBtn').addEventListener('click', unbanAccount);
+            document.getElementById('toggleVerificationBtn').addEventListener('click', toggleVerification);
+            document.getElementById('closeModal').addEventListener('click', closeModal);
+
+            // Close modal if clicked outside
+            window.addEventListener('click', (event) => {
+                if (event.target == accountModal) {
+                    closeModal();
+                }
+            });
+
+    </script>
     <style>
         /* Themes */
         .light-mode {
@@ -1196,6 +1451,8 @@
         }
         button {
             margin-left: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
         }
         /* Modal styling */
         .modal {
@@ -1217,24 +1474,20 @@
             padding: 20px;
             border: 1px solid #888;
             width: 80%;
+            border-radius: 5px;
+            position: relative;
+        }
+        #closeModal {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 30px;
+            font-weight: bold;
+            cursor: pointer;
         }
     </style>
-    <!-- Include Firebase scripts -->
-    <script src="https://www.gstatic.com/firebasejs/9.20.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.20.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.20.0/firebase-firestore.js"></script>
 </head>
 <body>
-
-<section id="settings" style="display:none;">
-    <p>Select your preferred color theme:</p>
-    <select id="theme-select">
-        <option value="light-mode">Light</option>
-        <option value="dark-mode">Dark</option>
-        <option value="blue-mode">Blue</option>
-        <option value="green-mode">Green</option>
-    </select>
-</section>
 
 <div class="container">
     <h1>Account Management System</h1>
@@ -1242,7 +1495,7 @@
     <!-- Login Area -->
     <div id="loginArea">
         <h2>Login</h2>
-        <input type="text" id="loginUsernameInput" placeholder="Username" required>
+        <input type="email" id="loginUsernameInput" placeholder="Email" required>
         <input type="password" id="loginPasswordInput" placeholder="Password" required>
         <button id="loginBtn">Login</button>
     </div>
@@ -1270,10 +1523,10 @@
 <!-- Modal for Account Management -->
 <div id="accountModal" class="modal">
     <div class="modal-content">
-        <span id="closeModal" style="cursor:pointer; float:right;">&times;</span>
+        <span id="closeModal">&times;</span>
         <h2>Account Management</h2>
         <p id="accountDetails"></p>
-        <input type="text" id="newEmailInput" placeholder="New Email">
+        <input type="email" id="newEmailInput" placeholder="New Email">
         <button id="changeEmailBtn">Change Email</button>
         <button id="deleteAccountBtn">Delete Account</button>
         <button id="banAccountBtn">Ban Account</button>
@@ -1282,195 +1535,11 @@
     </div>
 </div>
 
-<script>
-    // Your Firebase configuration
-    const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_PROJECT_ID.appspot.com",
-        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-        appId: "YOUR_APP_ID"
-    };
-
-    // Initialize Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const firestore = firebase.firestore();
-
-    let loggedInUser = null;
-    let currentAccount = null; // Store the current account being managed
-
-    // Functions
-    async function createAccount(username, email, password) {
-        try {
-            const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-            // Store additional user data in Firestore
-            await firestore.collection('users').doc(userCredential.user.uid).set({
-                username: username,
-                email: email,
-                status: 'active',
-                verified: false,
-            });
-            alert('Account created successfully.');
-            updateAccountList(); // Update the account list after creating a new account
-        } catch (error) {
-            alert(error.message);
-        }
-    }
-
-    async function login(email, password) {
-        try {
-            const userCredential = await auth.signInWithEmailAndPassword(email, password);
-            loggedInUser = userCredential.user;
-            updateUI();
-            alert('Logged in successfully.');
-            updateAccountList(); // Update the account list after logging in
-        } catch (error) {
-            alert(error.message);
-        }
-    }
-
-    function logout() {
-        auth.signOut().then(() => {
-            loggedInUser = null;
-            updateUI();
-        });
-    }
-
-    async function updateAccountList() {
-        const accountList = document.getElementById('accountList');
-        accountList.innerHTML = '';
-
-        const snapshot = await firestore.collection('users').get();
-        snapshot.forEach(doc => {
-            const account = doc.data();
-            const accountItem = document.createElement('div');
-            accountItem.classList.add('account-item');
-            accountItem.innerHTML = `
-                <span>${account.username} (${account.email}) - Status: ${account.status} - Verified: ${account.verified}</span>
-                <div>
-                    <button onclick="openAccountModal('${doc.id}')">Manage</button>
-                </div>
-            `;
-            accountList.appendChild(accountItem);
-        });
-    }
-
-    // Open modal for account management
-    async function openAccountModal(userId) {
-        const doc = await firestore.collection('users').doc(userId).get();
-        currentAccount = doc.data();
-        document.getElementById('accountDetails').textContent = `Managing: ${currentAccount.username} (${currentAccount.email})`;
-        document.getElementById('newEmailInput').value = ''; // Clear email input
-        document.getElementById('accountModal').style.display = "block";
-    }
-
-    // Account management functions
-    async function changeEmail(newEmail) {
-        await firestore.collection('users').doc(currentAccount.id).update({ email: newEmail });
-        alert(`Email for ${currentAccount.username} has been changed to ${newEmail}.`);
-        updateAccountList();
-    }
-
-    async function deleteAccount() {
-        await firestore.collection('users').doc(currentAccount.id).delete();
-        alert(`${currentAccount.username} has been deleted.`);
-        updateAccountList();
-        closeModal(); // Close the modal after deletion
-    }
-
-    async function banAccount(userId) {
-        await firestore.collection('users').doc(userId).update({ status: 'banned' });
-        alert(`${currentAccount.username} has been banned.`);
-        updateAccountList();
-        closeModal();
-    }
-
-    async function unbanAccount(userId) {
-        await firestore.collection('users').doc(userId).update({ status: 'active' });
-        alert(`${currentAccount.username} has been unbanned.`);
-        updateAccountList();
-        closeModal();
-    }
-
-    async function toggleVerification(userId) {
-        const doc = await firestore.collection('users').doc(userId).get();
-        const verifiedStatus = !doc.data().verified; // Toggle verified status
-        await firestore.collection('users').doc(userId).update({ verified: verifiedStatus });
-        alert(`${currentAccount.username} has been ${verifiedStatus ? 'verified' : 'unverified'}.`);
-        updateAccountList();
-        closeModal();
-    }
-
-    // Event Listeners
-    document.getElementById('createAccountBtn').addEventListener('click', () => {
-        const username = document.getElementById('createUsernameInput').value;
-        const email = document.getElementById('createEmailInput').value;
-        const password = document.getElementById('createPasswordInput').value;
-        createAccount(username, email, password);
-    });
-
-    document.getElementById('loginBtn').addEventListener('click', () => {
-        const email = document.getElementById('loginUsernameInput').value;
-        const password = document.getElementById('loginPasswordInput').value;
-        login(email, password);
-    });
-
-    document.getElementById('logoutBtn').addEventListener('click', logout);
-    document.getElementById('closeModal').addEventListener('click', closeModal);
-
-    function closeModal() {
-        document.getElementById('accountModal').style.display = "none";
-        currentAccount = null; // Reset the current account
-    }
-
-    function updateUI() {
-        if (loggedInUser) {
-            document.getElementById('userInfo').classList.remove('hidden');
-            document.getElementById('loggedInAs').textContent = `Logged in as: ${loggedInUser.email}`;
-            document.getElementById('loginArea').style.display = "none";
-            document.getElementById('adminSection').classList.remove('hidden');
-        } else {
-            document.getElementById('userInfo').classList.add('hidden');
-            document.getElementById('loginArea').style.display = "block";
-            document.getElementById('adminSection').classList.add('hidden');
-        }
-    }
-
-    // Change Email Button
-    document.getElementById('changeEmailBtn').addEventListener('click', () => {
-        const newEmail = document.getElementById('newEmailInput').value;
-        if (newEmail) {
-            changeEmail(newEmail);
-        } else {
-            alert('Please enter a new email.');
-        }
-    });
-
-    // Delete Account Button
-    document.getElementById('deleteAccountBtn').addEventListener('click', deleteAccount);
-
-    // Ban Account Button
-    document.getElementById('banAccountBtn').addEventListener('click', () => {
-        banAccount(currentAccount.id);
-    });
-
-    // Unban Account Button
-    document.getElementById('unbanAccountBtn').addEventListener('click', () => {
-        unbanAccount(currentAccount.id);
-    });
-
-    // Toggle Verification Button
-    document.getElementById('toggleVerificationBtn').addEventListener('click', () => {
-        toggleVerification(currentAccount.id);
-    });
-
-    // Set the initial UI
-    updateUI();
-</script>
 </body>
 </html>
+
+
+
 
 
 
