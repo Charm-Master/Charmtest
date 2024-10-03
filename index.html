@@ -916,6 +916,55 @@
     </style>
 </head>
 <body class="light-mode">
+    <!-- Navigation Bar -->
+    <nav>
+        <div class="logo">Charm</div>
+        <ul>
+            <li><a href="#home" onclick="showSection('home')">Home</a></li>
+            <li><a href="#python-repo" onclick="showSection('python-repo')">Python Repository</a></li>
+            <li><a href="#html-repo" onclick="showSection('html-repo')">HTML Repository</a></li>
+            <li><a href="#about" onclick="showSection('about')">About</a></li>
+            <li><a href="#settings" onclick="showSection('settings')">Settings</a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+	<!-- Inside your <section id="home"> -->
+	<section id="home">
+    	<h1>Welcome to the Project Repository</h1>
+    	<p>Explore, view, and download a collection of Python and HTML projects with detailed descriptions.</p>
+      <h9>
+      <head>
+      <!-- Font Awesome Icon Library -->
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+      <style>
+      .checked {
+        color: orange;
+      }
+      </style>
+      </head>
+      <body>
+	
+	<img src="https://cdn.stocksnap.io/img-thumbs/960w/programming-code_1STVFMTBJY.jpg" alt="Description of the image">
+
+      <h2>Star Rating</h2>
+      <span class="fa fa-star checked"></span>
+      <span class="fa fa-star checked"></span>
+      <span class="fa fa-star checked"></span>
+      <span class="fa fa-star checked"></span>
+      <span class="fa fa-star checked"></span>
+
+      </body>
+	<p>"The Design Layout, gives a real sense of coding." - AnonymousF</p>
+	<p></p>
+	<p>"Its so easy to understand and use." - AnonymousElite</p>
+	<p></p>
+	<p>"I'm lovin' it." - AnonymousM</p>
+	<p></p>
+	<p>"Too easy" - Anonymous</p>
+      </h9>
+	</section>
 
 
 
@@ -1086,98 +1135,342 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firebase Authentication</title>
-    <!-- Include Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.21.0/firebase-auth.js"></script>
+    <title>Account Management System</title>
+    <style>
+        /* Themes */
+        .light-mode {
+            background-color: #f0f0f0;
+            color: #000;
+        }
+
+        .dark-mode {
+            background-color: #333;
+            color: #fff;
+        }
+
+        .blue-mode {
+            background-color: #456;
+            color: #fff;
+        }
+
+        .green-mode {
+            background-color: #678;
+            color: #fff;
+        }
+
+        /* Basic styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .hidden {
+            display: none;
+        }
+        .account-list {
+            margin-top: 20px;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+        }
+        .account-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #ccc;
+        }
+        .account-item:last-child {
+            border-bottom: none;
+        }
+        button {
+            margin-left: 5px;
+        }
+        /* Modal styling */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+            padding-top: 60px;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+    </style>
+    <!-- Include Firebase scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.20.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.20.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.20.0/firebase-firestore.js"></script>
 </head>
 <body>
 
-    <h1>Firebase Authentication</h1>
-    <input type="email" id="email" placeholder="Email" required>
-    <input type="password" id="password" placeholder="Password" required>
+<section id="settings" style="display:none;">
+    <p>Select your preferred color theme:</p>
+    <select id="theme-select">
+        <option value="light-mode">Light</option>
+        <option value="dark-mode">Dark</option>
+        <option value="blue-mode">Blue</option>
+        <option value="green-mode">Green</option>
+    </select>
+</section>
+
+<div class="container">
+    <h1>Account Management System</h1>
+
+    <!-- Login Area -->
+    <div id="loginArea">
+        <h2>Login</h2>
+        <input type="text" id="loginUsernameInput" placeholder="Username" required>
+        <input type="password" id="loginPasswordInput" placeholder="Password" required>
+        <button id="loginBtn">Login</button>
+    </div>
+
+    <!-- Account Creation -->
+    <h2>Create Account</h2>
+    <input type="text" id="createUsernameInput" placeholder="Username" required>
+    <input type="email" id="createEmailInput" placeholder="Email" required>
+    <input type="password" id="createPasswordInput" placeholder="Password" required>
     <button id="createAccountBtn">Create Account</button>
-    <button id="loginBtn">Log In</button>
-    <button id="logoutBtn">Log Out</button>
 
-    <!-- Optional: Add an area to show logged-in status -->
-    <div id="status"></div>
+    <!-- Logged In User Info -->
+    <div id="userInfo" class="hidden">
+        <p id="loggedInAs"></p>
+        <button id="logoutBtn">Logout</button>
+    </div>
 
-    <script>
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyDs-JGgBTA3ncI8RdDLvY17P8gO7KbHE-g",
-            authDomain: "officialcharmdata.firebaseapp.com",
-            projectId: "officialcharmdata",
-            storageBucket: "officialcharmdata.appspot.com",
-            messagingSenderId: "978863054747",
-            appId: "1:978863054747:web:6074fcf487cda2fbe50b3e",
-            measurementId: "G-BD9EZRYCGZ"
-        };
+    <!-- Admin Management Section -->
+    <div id="adminSection" class="hidden">
+        <h2>Admin Actions</h2>
+        <div id="accountList" class="account-list"></div>
+    </div>
+</div>
 
-        // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
+<!-- Modal for Account Management -->
+<div id="accountModal" class="modal">
+    <div class="modal-content">
+        <span id="closeModal" style="cursor:pointer; float:right;">&times;</span>
+        <h2>Account Management</h2>
+        <p id="accountDetails"></p>
+        <input type="text" id="newEmailInput" placeholder="New Email">
+        <button id="changeEmailBtn">Change Email</button>
+        <button id="deleteAccountBtn">Delete Account</button>
+        <button id="banAccountBtn">Ban Account</button>
+        <button id="unbanAccountBtn">Unban Account</button>
+        <button id="toggleVerificationBtn">Toggle Verification</button>
+    </div>
+</div>
 
-        // Create account function
-        document.getElementById('createAccountBtn').onclick = function() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            auth.createUserWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    // Account created successfully
-                    console.log('Account created:', userCredential);
-                    alert('Account created successfully! You can now log in.');
-                })
-                .catch((error) => {
-                    console.error('Error creating account:', error);
-                    alert(error.message);
-                });
-        };
+<script>
+    // Your Firebase configuration
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_PROJECT_ID.appspot.com",
+        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+        appId: "YOUR_APP_ID"
+    };
 
-        // Login function
-        document.getElementById('loginBtn').onclick = function() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            auth.signInWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    // Login successful
-                    console.log('Logged in:', userCredential);
-                    alert('Logged in successfully!');
-                })
-                .catch((error) => {
-                    console.error('Error logging in:', error);
-                    alert(error.message);
-                });
-        };
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const firestore = firebase.firestore();
 
-        // Logout function
-        document.getElementById('logoutBtn').onclick = function() {
-            auth.signOut().then(() => {
-                console.log('User logged out');
-                alert('Logged out successfully!');
-            }).catch((error) => {
-                console.error('Error logging out:', error);
+    let loggedInUser = null;
+    let currentAccount = null; // Store the current account being managed
+
+    // Functions
+    async function createAccount(username, email, password) {
+        try {
+            const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+            // Store additional user data in Firestore
+            await firestore.collection('users').doc(userCredential.user.uid).set({
+                username: username,
+                email: email,
+                status: 'active',
+                verified: false,
             });
-        };
+            alert('Account created successfully.');
+            updateAccountList(); // Update the account list after creating a new account
+        } catch (error) {
+            alert(error.message);
+        }
+    }
 
-        // Monitor authentication state
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                // User is signed in.
-                document.getElementById('status').innerText = `Logged in as: ${user.email}`;
-            } else {
-                // No user is signed in.
-                document.getElementById('status').innerText = 'No user is logged in.';
-            }
+    async function login(email, password) {
+        try {
+            const userCredential = await auth.signInWithEmailAndPassword(email, password);
+            loggedInUser = userCredential.user;
+            updateUI();
+            alert('Logged in successfully.');
+            updateAccountList(); // Update the account list after logging in
+        } catch (error) {
+            alert(error.message);
+        }
+    }
+
+    function logout() {
+        auth.signOut().then(() => {
+            loggedInUser = null;
+            updateUI();
         });
-    </script>
+    }
 
+    async function updateAccountList() {
+        const accountList = document.getElementById('accountList');
+        accountList.innerHTML = '';
+
+        const snapshot = await firestore.collection('users').get();
+        snapshot.forEach(doc => {
+            const account = doc.data();
+            const accountItem = document.createElement('div');
+            accountItem.classList.add('account-item');
+            accountItem.innerHTML = `
+                <span>${account.username} (${account.email}) - Status: ${account.status} - Verified: ${account.verified}</span>
+                <div>
+                    <button onclick="openAccountModal('${doc.id}')">Manage</button>
+                </div>
+            `;
+            accountList.appendChild(accountItem);
+        });
+    }
+
+    // Open modal for account management
+    async function openAccountModal(userId) {
+        const doc = await firestore.collection('users').doc(userId).get();
+        currentAccount = doc.data();
+        document.getElementById('accountDetails').textContent = `Managing: ${currentAccount.username} (${currentAccount.email})`;
+        document.getElementById('newEmailInput').value = ''; // Clear email input
+        document.getElementById('accountModal').style.display = "block";
+    }
+
+    // Account management functions
+    async function changeEmail(newEmail) {
+        await firestore.collection('users').doc(currentAccount.id).update({ email: newEmail });
+        alert(`Email for ${currentAccount.username} has been changed to ${newEmail}.`);
+        updateAccountList();
+    }
+
+    async function deleteAccount() {
+        await firestore.collection('users').doc(currentAccount.id).delete();
+        alert(`${currentAccount.username} has been deleted.`);
+        updateAccountList();
+        closeModal(); // Close the modal after deletion
+    }
+
+    async function banAccount(userId) {
+        await firestore.collection('users').doc(userId).update({ status: 'banned' });
+        alert(`${currentAccount.username} has been banned.`);
+        updateAccountList();
+        closeModal();
+    }
+
+    async function unbanAccount(userId) {
+        await firestore.collection('users').doc(userId).update({ status: 'active' });
+        alert(`${currentAccount.username} has been unbanned.`);
+        updateAccountList();
+        closeModal();
+    }
+
+    async function toggleVerification(userId) {
+        const doc = await firestore.collection('users').doc(userId).get();
+        const verifiedStatus = !doc.data().verified; // Toggle verified status
+        await firestore.collection('users').doc(userId).update({ verified: verifiedStatus });
+        alert(`${currentAccount.username} has been ${verifiedStatus ? 'verified' : 'unverified'}.`);
+        updateAccountList();
+        closeModal();
+    }
+
+    // Event Listeners
+    document.getElementById('createAccountBtn').addEventListener('click', () => {
+        const username = document.getElementById('createUsernameInput').value;
+        const email = document.getElementById('createEmailInput').value;
+        const password = document.getElementById('createPasswordInput').value;
+        createAccount(username, email, password);
+    });
+
+    document.getElementById('loginBtn').addEventListener('click', () => {
+        const email = document.getElementById('loginUsernameInput').value;
+        const password = document.getElementById('loginPasswordInput').value;
+        login(email, password);
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+    document.getElementById('closeModal').addEventListener('click', closeModal);
+
+    function closeModal() {
+        document.getElementById('accountModal').style.display = "none";
+        currentAccount = null; // Reset the current account
+    }
+
+    function updateUI() {
+        if (loggedInUser) {
+            document.getElementById('userInfo').classList.remove('hidden');
+            document.getElementById('loggedInAs').textContent = `Logged in as: ${loggedInUser.email}`;
+            document.getElementById('loginArea').style.display = "none";
+            document.getElementById('adminSection').classList.remove('hidden');
+        } else {
+            document.getElementById('userInfo').classList.add('hidden');
+            document.getElementById('loginArea').style.display = "block";
+            document.getElementById('adminSection').classList.add('hidden');
+        }
+    }
+
+    // Change Email Button
+    document.getElementById('changeEmailBtn').addEventListener('click', () => {
+        const newEmail = document.getElementById('newEmailInput').value;
+        if (newEmail) {
+            changeEmail(newEmail);
+        } else {
+            alert('Please enter a new email.');
+        }
+    });
+
+    // Delete Account Button
+    document.getElementById('deleteAccountBtn').addEventListener('click', deleteAccount);
+
+    // Ban Account Button
+    document.getElementById('banAccountBtn').addEventListener('click', () => {
+        banAccount(currentAccount.id);
+    });
+
+    // Unban Account Button
+    document.getElementById('unbanAccountBtn').addEventListener('click', () => {
+        unbanAccount(currentAccount.id);
+    });
+
+    // Toggle Verification Button
+    document.getElementById('toggleVerificationBtn').addEventListener('click', () => {
+        toggleVerification(currentAccount.id);
+    });
+
+    // Set the initial UI
+    updateUI();
+</script>
 </body>
 </html>
-i
-
-
 
 
 
